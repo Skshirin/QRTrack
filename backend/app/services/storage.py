@@ -44,3 +44,9 @@ def check_object(key: str, sha256: str):
         return size, False
     body = internal.get_object(Bucket=settings.s3_bucket, Key=key)["Body"].read()
     return size, hashlib.sha256(body).hexdigest() == sha256
+
+
+def put_object(key: str, data: bytes, content_type: str = "image/jpeg"):
+    ensure_bucket()
+    internal.put_object(Bucket=settings.s3_bucket, Key=key, Body=data, ContentType=content_type)
+

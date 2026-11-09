@@ -74,7 +74,28 @@ class Api {
   Future<Map<String, dynamic>> push(List<Map<String, dynamic>> items) async =>
       _ok(await _req('POST', '/sync/push', body: {'device_now': DateTime.now().toUtc().toIso8601String(), 'items': items}));
 
+  Future<http.Response> _reqRaw(String method, String path, {Uint8List? body, String? contentType = 'application/octet-stream', bool retry = true}) async {
+    final uri = Uri.parse('$base$path');
+    final headers = {
+      if (contentType != null) 'Content-Type': contentType,
+      'Authorization': 'Bearer ${await _ss.read(key: 'access') ?? ''}',
+    };
+    final res = await (method == 'GET'
+            ? http.get(uri, headers: headers)
+            : http.post(uri, headers: headers, body: body))
+        .timeout(const Duration(minutes: 2));
+    if (res.statusCode == 401 && retry && await _refresh()) {
+      return _reqRaw(method, path, body: body, contentType: contentType, retry: false);
+    }
+    return res;
+  }
+
   Future<void> uploadPhoto(String id, Uint8List bytes) async {
+    // 1. Direct upload to backend (works on physical phones, emulators, reverse proxy, LAN)
+    final direct = await _reqRaw('POST', '/photos/$id/upload', body: bytes, contentType: 'image/jpeg');
+    if (direct.statusCode < 300) return;
+
+    // 2. Fallback to presigned URL if direct endpoint returns error
     final u = _ok(await _req('POST', '/photos/upload-url', body: {'photo_id': id}));
     final put = await http.put(Uri.parse(u['url']), headers: {'Content-Type': 'image/jpeg'}, body: bytes).timeout(const Duration(minutes: 2));
     if (put.statusCode >= 300) throw ApiException(put.statusCode, 'storage upload failed');

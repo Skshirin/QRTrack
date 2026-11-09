@@ -89,7 +89,35 @@ class _ChecklistScreenState extends State<ChecklistScreen> {
   }
 
   Widget _summary(AppLocalizations t, List<Map<String, dynamic>> qs) {
+    final fails = qs.where((q) {
+      final failVals = (q['fail_values'] as List?)?.cast<String>() ?? [];
+      final ans = answers[q['key']]?.toString();
+      return ans != null && failVals.contains(ans);
+    }).toList();
+
     return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+      if (fails.isNotEmpty)
+        Container(
+          margin: const EdgeInsets.only(bottom: 12),
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: Colors.amber.shade100,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: Colors.amber.shade700),
+          ),
+          child: Row(
+            children: [
+              Icon(Icons.warning_amber, color: Colors.amber.shade900),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  '${fails.length} fault(s) detected. An issue will be opened in the Issues section upon submission.',
+                  style: TextStyle(fontSize: 13, color: Colors.amber.shade900, fontWeight: FontWeight.w600),
+                ),
+              ),
+            ],
+          ),
+        ),
       Expanded(child: ListView(children: [
         for (final q in qs.where((q) => q['type'] != 'photo')) ListTile(title: Text(tr(context, q['label'])), trailing: Text('${answers[q['key']] ?? '-'}', style: const TextStyle(fontSize: 18))),
         ListTile(leading: const Icon(Icons.photo_camera), title: Text('${photos.length} photo')),

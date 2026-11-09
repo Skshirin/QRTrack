@@ -34,6 +34,20 @@
   "fixIssue": "Fix: scan the same tag, then take the after-photo",
   "wrongTag": "This is not the tag of that control point",
   "nothingDue": "Nothing due today",
+  "reportIssue": "Report Issue",
+  "noIssues": "No issues reported",
+  "filterAll": "All",
+  "filterOpen": "Open",
+  "filterFixed": "Fixed",
+  "severityHigh": "High",
+  "severityMedium": "Medium",
+  "severityLow": "Low",
+  "issueCategory": "Category",
+  "issueDescription": "Description / Notes",
+  "issueFixedSuccess": "Issue marked as fixed and queued for verification.",
+  "issueReportedSuccess": "Issue reported and saved offline.",
+  "selectAsset": "Select Control Point",
+  "fixInstruction": "To fix: scan the same QR tag, then capture an after-photo.",
   "@waitingUpload": {
     "placeholders": {
       "count": {

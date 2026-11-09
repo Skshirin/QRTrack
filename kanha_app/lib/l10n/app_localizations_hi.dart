@@ -114,4 +114,47 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get nothingDue => 'आज कुछ बाकी नहीं';
+
+  @override
+  String get reportIssue => 'समस्या दर्ज करें';
+
+  @override
+  String get noIssues => 'कोई समस्या नहीं है';
+
+  @override
+  String get filterAll => 'सभी';
+
+  @override
+  String get filterOpen => 'खुली';
+
+  @override
+  String get filterFixed => 'हल की गई';
+
+  @override
+  String get severityHigh => 'उच्च';
+
+  @override
+  String get severityMedium => 'मध्यम';
+
+  @override
+  String get severityLow => 'कम';
+
+  @override
+  String get issueCategory => 'श्रेणी';
+
+  @override
+  String get issueDescription => 'विवरण';
+
+  @override
+  String get issueFixedSuccess => 'समस्या हल के रूप में दर्ज की गई।';
+
+  @override
+  String get issueReportedSuccess => 'समस्या दर्ज कर ली गई।';
+
+  @override
+  String get selectAsset => 'कंट्रोल पॉइंट चुनें';
+
+  @override
+  String get fixInstruction =>
+      'ठीक करने के लिए: वही QR टैग स्कैन करें और फोटो लें।';
 }

@@ -303,6 +303,90 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Nothing due today'**
   String get nothingDue;
+
+  /// No description provided for @reportIssue.
+  ///
+  /// In en, this message translates to:
+  /// **'Report Issue'**
+  String get reportIssue;
+
+  /// No description provided for @noIssues.
+  ///
+  /// In en, this message translates to:
+  /// **'No issues reported'**
+  String get noIssues;
+
+  /// No description provided for @filterAll.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get filterAll;
+
+  /// No description provided for @filterOpen.
+  ///
+  /// In en, this message translates to:
+  /// **'Open'**
+  String get filterOpen;
+
+  /// No description provided for @filterFixed.
+  ///
+  /// In en, this message translates to:
+  /// **'Fixed'**
+  String get filterFixed;
+
+  /// No description provided for @severityHigh.
+  ///
+  /// In en, this message translates to:
+  /// **'High'**
+  String get severityHigh;
+
+  /// No description provided for @severityMedium.
+  ///
+  /// In en, this message translates to:
+  /// **'Medium'**
+  String get severityMedium;
+
+  /// No description provided for @severityLow.
+  ///
+  /// In en, this message translates to:
+  /// **'Low'**
+  String get severityLow;
+
+  /// No description provided for @issueCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Category'**
+  String get issueCategory;
+
+  /// No description provided for @issueDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Description / Notes'**
+  String get issueDescription;
+
+  /// No description provided for @issueFixedSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Issue marked as fixed and queued for verification.'**
+  String get issueFixedSuccess;
+
+  /// No description provided for @issueReportedSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Issue reported and saved offline.'**
+  String get issueReportedSuccess;
+
+  /// No description provided for @selectAsset.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Control Point'**
+  String get selectAsset;
+
+  /// No description provided for @fixInstruction.
+  ///
+  /// In en, this message translates to:
+  /// **'To fix: scan the same QR tag, then capture an after-photo.'**
+  String get fixInstruction;
 }
 
 class _AppLocalizationsDelegate

@@ -15,7 +15,7 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   List<Map<String, dynamic>> due = [];
   Map<String, dynamic>? me;
   Map<String, Map<String, dynamic>> types = {};
@@ -23,13 +23,22 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _load();
     svc.sync.pending.addListener(_load); // list refreshes after every sync
     WidgetsBinding.instance.addPostFrameCallback((_) => _notice());
   }
 
   @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      svc.sync.run();
+    }
+  }
+
+  @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     svc.sync.pending.removeListener(_load);
     super.dispose();
   }
@@ -85,13 +94,31 @@ class _HomeScreenState extends State<HomeScreen> {
       appBar: AppBar(
         title: Text(t.dueToday),
         actions: [
-          ValueListenableBuilder<int>(
-            valueListenable: svc.sync.pending,
-            builder: (_, n, __) => ActionChip(
-              avatar: Icon(n == 0 ? Icons.cloud_done : Icons.cloud_upload),
-              label: Text(n == 0 ? t.allSynced : t.waitingUpload(n)),
-              onPressed: () => svc.sync.run(),
-              tooltip: t.syncNow,
+          ValueListenableBuilder<bool>(
+            valueListenable: svc.sync.isSyncing,
+            builder: (_, isSyncing, __) => ValueListenableBuilder<int>(
+              valueListenable: svc.sync.pending,
+              builder: (ctx, n, __) => ActionChip(
+                avatar: isSyncing
+                    ? const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2))
+                    : Icon(n == 0 ? Icons.cloud_done : Icons.cloud_upload),
+                label: Text(isSyncing ? 'Syncing...' : (n == 0 ? t.allSynced : t.waitingUpload(n))),
+                onPressed: isSyncing
+                    ? null
+                    : () async {
+                        final res = await svc.sync.run();
+                        if (!mounted) return;
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(res.message ?? (res.success ? 'Sync complete' : 'Sync failed')),
+                            backgroundColor: res.success ? Colors.green.shade700 : Colors.red.shade700,
+                            duration: const Duration(seconds: 3),
+                          ),
+                        );
+                        _load();
+                      },
+                tooltip: t.syncNow,
+              ),
             ),
           ),
           PopupMenuButton<String>(

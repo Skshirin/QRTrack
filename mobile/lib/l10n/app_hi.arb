@@ -33,5 +33,19 @@
   "save": "सेव करें",
   "fixIssue": "ठीक करने के लिए: वही टैग स्कैन करें, फिर बाद की फोटो लें",
   "wrongTag": "यह उस नियंत्रण बिंदु का टैग नहीं है",
-  "nothingDue": "आज कुछ बाकी नहीं"
+  "nothingDue": "आज कुछ बाकी नहीं",
+  "reportIssue": "समस्या दर्ज करें",
+  "noIssues": "कोई समस्या नहीं है",
+  "filterAll": "सभी",
+  "filterOpen": "खुली",
+  "filterFixed": "हल की गई",
+  "severityHigh": "उच्च",
+  "severityMedium": "मध्यम",
+  "severityLow": "कम",
+  "issueCategory": "श्रेणी",
+  "issueDescription": "विवरण",
+  "issueFixedSuccess": "समस्या हल के रूप में दर्ज की गई।",
+  "issueReportedSuccess": "समस्या दर्ज कर ली गई।",
+  "selectAsset": "कंट्रोल पॉइंट चुनें",
+  "fixInstruction": "ठीक करने के लिए: वही QR टैग स्कैन करें और फोटो लें।"
 }

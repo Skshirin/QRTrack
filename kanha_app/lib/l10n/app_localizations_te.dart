@@ -114,4 +114,47 @@ class AppLocalizationsTe extends AppLocalizations {
 
   @override
   String get nothingDue => 'ఈ రోజు ఏమీ లేదు';
+
+  @override
+  String get reportIssue => 'సమస్యను నివేదించండి';
+
+  @override
+  String get noIssues => 'ఎటువంటి సమస్యలు లేవు';
+
+  @override
+  String get filterAll => 'అన్నీ';
+
+  @override
+  String get filterOpen => 'తెరిచి ఉంది';
+
+  @override
+  String get filterFixed => 'పరిష్కరించబడింది';
+
+  @override
+  String get severityHigh => 'అధిక ప్రాధాన్యత';
+
+  @override
+  String get severityMedium => 'మధ్యస్థ ప్రాధాన్యత';
+
+  @override
+  String get severityLow => 'తక్కువ ప్రాధాన్యత';
+
+  @override
+  String get issueCategory => 'వర్గం';
+
+  @override
+  String get issueDescription => 'వివరణ';
+
+  @override
+  String get issueFixedSuccess => 'సమస్య పరిష్కరించబడింది.';
+
+  @override
+  String get issueReportedSuccess => 'సమస్య నివేదించబడింది.';
+
+  @override
+  String get selectAsset => 'నియంత్రణ స్థానాన్ని ఎంచుకోండి';
+
+  @override
+  String get fixInstruction =>
+      'పరిష్కరించడానికి: అదే QR ట్యాగ్‌ను స్కాన్ చేసి ఫోటో తీయండి.';
 }

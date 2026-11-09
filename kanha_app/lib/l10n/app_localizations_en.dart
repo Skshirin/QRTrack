@@ -113,4 +113,48 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get nothingDue => 'Nothing due today';
+
+  @override
+  String get reportIssue => 'Report Issue';
+
+  @override
+  String get noIssues => 'No issues reported';
+
+  @override
+  String get filterAll => 'All';
+
+  @override
+  String get filterOpen => 'Open';
+
+  @override
+  String get filterFixed => 'Fixed';
+
+  @override
+  String get severityHigh => 'High';
+
+  @override
+  String get severityMedium => 'Medium';
+
+  @override
+  String get severityLow => 'Low';
+
+  @override
+  String get issueCategory => 'Category';
+
+  @override
+  String get issueDescription => 'Description / Notes';
+
+  @override
+  String get issueFixedSuccess =>
+      'Issue marked as fixed and queued for verification.';
+
+  @override
+  String get issueReportedSuccess => 'Issue reported and saved offline.';
+
+  @override
+  String get selectAsset => 'Select Control Point';
+
+  @override
+  String get fixInstruction =>
+      'To fix: scan the same QR tag, then capture an after-photo.';
 }

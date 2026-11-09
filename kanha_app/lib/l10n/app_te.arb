@@ -33,5 +33,19 @@
   "save": "సేవ్",
   "fixIssue": "సరిచేయడానికి: అదే ట్యాగ్ స్కాన్ చేసి, తర్వాత ఫోటో తీయండి",
   "wrongTag": "ఇది ఆ నియంత్రణ పాయింట్ ట్యాగ్ కాదు",
-  "nothingDue": "ఈ రోజు ఏమీ లేదు"
+  "nothingDue": "ఈ రోజు ఏమీ లేదు",
+  "reportIssue": "సమస్యను నివేదించండి",
+  "noIssues": "ఎటువంటి సమస్యలు లేవు",
+  "filterAll": "అన్నీ",
+  "filterOpen": "తెరిచి ఉంది",
+  "filterFixed": "పరిష్కరించబడింది",
+  "severityHigh": "అధిక ప్రాధాన్యత",
+  "severityMedium": "మధ్యస్థ ప్రాధాన్యత",
+  "severityLow": "తక్కువ ప్రాధాన్యత",
+  "issueCategory": "వర్గం",
+  "issueDescription": "వివరణ",
+  "issueFixedSuccess": "సమస్య పరిష్కరించబడింది.",
+  "issueReportedSuccess": "సమస్య నివేదించబడింది.",
+  "selectAsset": "నియంత్రణ స్థానాన్ని ఎంచుకోండి",
+  "fixInstruction": "పరిష్కరించడానికి: అదే QR ట్యాగ్‌ను స్కాన్ చేసి ఫోటో తీయండి."
 }

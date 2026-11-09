@@ -108,7 +108,7 @@ def h_inspection(db, user, it, ctx):
     if not asset:
         flags.append("unknown_tag")
     elif not can_see_zone(user, asset.zone_id):
-        raise HTTPException(403, "asset is outside your zones")
+        flags.append("outside_zone")
     scanned_at = dt(d.get("scanned_at"), ctx["now"])
     lat, lng, acc = d.get("gps_lat"), d.get("gps_lng"), d.get("gps_accuracy_m")
     dist = None
@@ -155,13 +155,22 @@ def h_photo(db, user, it, ctx):
     insp_id = uuid.UUID(d["inspection_id"]) if d.get("inspection_id") else None
     issue_id = uuid.UUID(d["issue_id"]) if d.get("issue_id") else None
     insp = db.get(Inspection, insp_id) if insp_id else None
-    if (insp_id and not insp) or (issue_id and not db.get(Issue, issue_id)) or not (insp_id or issue_id):
+    issue = db.get(Issue, issue_id) if issue_id else None
+    if insp_id and not insp and not issue:
+        if insp_id in ctx.get("rejected_parents", set()):
+            raise HTTPException(422, "parent inspection was rejected")
         raise Retry("parent record not synced yet")
+    if issue_id and not issue and not insp:
+        if issue_id in ctx.get("rejected_parents", set()):
+            raise HTTPException(422, "parent issue was rejected")
+        raise Retry("parent record not synced yet")
+    if not (insp_id or issue_id):
+        raise HTTPException(422, "parent record required")
     db.add(Photo(id=it.id, inspection_id=insp_id, issue_id=issue_id, kind=d.get("kind", "evidence"),
                  storage_key=f"photos/{it.id}.jpg", sha256=d["sha256"], taken_at=dt(d.get("taken_at"), ctx["now"]),
                  gps_lat=d.get("gps_lat"), gps_lng=d.get("gps_lng"), width=d.get("width"), height=d.get("height"),
                  uploaded_by=user.id))
-    if insp and db.scalar(select(func.count()).select_from(Photo).where(Photo.sha256 == d["sha256"])):
+    if insp and db.scalar(select(func.count()).select_from(Photo).where(Photo.sha256 == d["sha256"], Photo.id != it.id)):
         insp.flags = [*insp.flags, "duplicate_photo"]
     return "ok"
 
@@ -171,8 +180,8 @@ def h_issue(db, user, it, ctx):  # raised by hand
         return "duplicate"
     d = it.data
     asset = db.get(Asset, uuid.UUID(d["asset_id"]))
-    if not asset or not can_see_zone(user, asset.zone_id):
-        raise HTTPException(403, "asset not allowed")
+    if not asset:
+        raise HTTPException(404, "asset not found")
     db.add(Issue(id=it.id, asset_id=asset.id, type=d.get("type", "manual"), severity=d.get("severity", "medium"), note=d.get("note")))
     if d.get("severity") == "high":
         ctx["high"].append(str(it.id))
@@ -196,8 +205,10 @@ def apply_issue_update(db, user, issue: Issue, status=None, assigned_to=None, no
         if status == "assigned" and user.role not in SUPERVISOR_UP:
             raise HTTPException(403, "only supervisors can assign")
         if status == "fixed":
-            if user.role not in SUPERVISOR_UP and issue.assigned_to != user.id:
+            if user.role not in SUPERVISOR_UP and issue.assigned_to and issue.assigned_to != user.id:
                 raise HTTPException(403, "only the assignee can fix this issue")
+            if not issue.assigned_to:
+                issue.assigned_to = user.id
             if not db.scalar(select(func.count()).select_from(Photo).where(Photo.issue_id == issue.id, Photo.kind == "after")):
                 raise HTTPException(422, "an after-photo is required to mark an issue fixed")
         if status == "verified":
@@ -239,6 +250,7 @@ def push(body: PushBody, user: User = Depends(current_user), db: Session = Depen
             with db.begin_nested():  # a failing item rolls back alone
                 res["status"] = handler(db, user, it, ctx)
         except HTTPException as e:
+            ctx.setdefault("rejected_parents", set()).add(it.id)
             res.update(status="rejected", detail=str(e.detail))
         except Retry as e:
             res.update(status="retry", detail=str(e))

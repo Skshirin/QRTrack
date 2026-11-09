@@ -109,7 +109,41 @@ class Repo {
   Future<List<Map<String, dynamic>>> myIssues() async {
     final u = await me();
     final isLead = u != null && ['supervisor', 'manager', 'admin'].contains(u['role']);
-    return (await l.all('issue')).where((i) => i['status'] != 'verified' && (isLead || i['assigned_to'] == u?['id'])).toList();
+    final all = await l.all('issue');
+    return all.where((i) {
+      if (i['status'] == 'verified') return false;
+      if (isLead) return true;
+      // Staff see their assigned issues and unassigned open issues to resolve in the field
+      return i['assigned_to'] == null || i['assigned_to'] == u?['id'];
+    }).toList();
+  }
+
+  Future<String> reportIssue({
+    required String assetId,
+    required String type,
+    required String severity,
+    String? note,
+    PhotoDraft? photo,
+  }) async {
+    final id = newId();
+    final now = DateTime.now().toUtc();
+    final data = {
+      'id': id,
+      'asset_id': assetId,
+      'type': type,
+      'severity': severity,
+      'status': 'open',
+      'note': note,
+      'opened_at': now.toIso8601String(),
+    };
+    await db.transaction((txn) async {
+      await l.upsert(txn, 'issue', 'id', id, data);
+      await txn.insert('outbox', {'type': 'issue', 'id': id, 'payload': jsonEncode(data)});
+      if (photo != null) {
+        await _addPhoto(txn, photo, issueId: id);
+      }
+    });
+    return id;
   }
 
   Future<void> submitIssueFix(Map<String, dynamic> issue, PhotoDraft after) async {

@@ -48,11 +48,14 @@ Future<void> main() async {
   final lang = await svc.local.kvGet('lang');
   if (lang != null) localeNotifier.value = Locale(lang);
   await svc.sync.refreshCount();
+  Connectivity().checkConnectivity().then((r) {
+    if (!r.contains(ConnectivityResult.none)) svc.sync.run();
+  });
   Connectivity().onConnectivityChanged.listen((r) {
     if (!r.contains(ConnectivityResult.none)) svc.sync.run();
   });
   if (Platform.isAndroid) {
-    await Workmanager().initialize(callbackDispatcher, isInDebugMode: false);
+    await Workmanager().initialize(callbackDispatcher);
     await Workmanager().registerPeriodicTask('kanha-sync', 'kanha-sync',
         frequency: const Duration(minutes: 15),
         constraints: Constraints(networkType: NetworkType.connected),
