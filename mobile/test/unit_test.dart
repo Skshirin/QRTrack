@@ -19,51 +19,41 @@ void main() {
   });
 
   group('Issue Filtering & Role Logic', () {
-    test('Field staff sees both assigned issues and unassigned campus issues', () {
-      final currentUserId = 'user-staff-123';
-      final isLead = false;
+    List<Map<String, dynamic>> filterIssues(List<Map<String, dynamic>> issues, {required bool isLead, required String currentUserId}) {
+      return issues.where((i) {
+        if (isLead) return true;
+        final assigned = i['assigned_to'];
+        return assigned == null || assigned == currentUserId;
+      }).toList();
+    }
 
+    test('Field staff sees both assigned issues and unassigned campus issues', () {
       final issues = [
         {'id': '1', 'assigned_to': 'user-staff-123', 'status': 'open'},
         {'id': '2', 'assigned_to': null, 'status': 'open'},
         {'id': '3', 'assigned_to': 'user-other-456', 'status': 'open'},
       ];
 
-      // Replicating the updated Repo.myIssues filtering logic
-      final visible = issues.where((i) {
-        if (isLead) return true;
-        final assigned = i['assigned_to'];
-        return assigned == null || assigned == currentUserId;
-      }).toList();
-
+      final visible = filterIssues(issues, isLead: false, currentUserId: 'user-staff-123');
       expect(visible.length, equals(2));
       expect(visible.map((i) => i['id']), containsAll(['1', '2']));
       expect(visible.map((i) => i['id']), isNot(contains('3')));
     });
 
     test('Lead sees all issues across campus', () {
-      final isLead = true;
-
       final issues = [
         {'id': '1', 'assigned_to': 'user-staff-123', 'status': 'open'},
         {'id': '2', 'assigned_to': null, 'status': 'open'},
         {'id': '3', 'assigned_to': 'user-other-456', 'status': 'open'},
       ];
 
-      final visible = issues.where((i) {
-        if (isLead) return true;
-        return false;
-      }).toList();
-
+      final visible = filterIssues(issues, isLead: true, currentUserId: 'lead-1');
       expect(visible.length, equals(3));
     });
   });
 
   group('Sync pending count deduction logic', () {
     test('Deduplicates photo counts between outbox and photo table', () {
-      // If an inspection and photo are queued:
-      // Outbox has 1 inspection record + 1 photo record
-      // Photo table has 1 unuploaded photo record with same id
       final outboxRecords = [
         {'id': 'insp-1', 'entity_type': 'inspection'},
         {'id': 'photo-1', 'entity_type': 'photo'},
@@ -83,7 +73,6 @@ void main() {
 
       final totalPending = outboxRecords.length + pendingPhotoCount;
 
-      // Must be 2 (1 inspection + 1 photo), NOT 3!
       expect(totalPending, equals(2));
     });
   });

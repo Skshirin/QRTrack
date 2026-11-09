@@ -18,12 +18,22 @@ class ScanScreen extends StatefulWidget {
 }
 
 class _ScanScreenState extends State<ScanScreen> {
+  final MobileScannerController _controller = MobileScannerController();
   bool _done = false;
 
-  void _finish(ScanResult r) {
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  Future<void> _finish(ScanResult r) async {
     if (_done) return;
     _done = true;
-    Navigator.pop(context, r);
+    try {
+      await _controller.stop();
+    } catch (_) {}
+    if (mounted) Navigator.pop(context, r);
   }
 
   Future<void> _manual() async {
@@ -37,7 +47,9 @@ class _ScanScreenState extends State<ScanScreen> {
         actions: [TextButton(onPressed: () => Navigator.pop(context, c.text.trim().toUpperCase()), child: Text(t.ok))],
       ),
     );
-    if (code != null && _tagPattern.hasMatch(code)) _finish(ScanResult(code, 'manual'));
+    if (code != null && _tagPattern.hasMatch(code)) {
+      await _finish(ScanResult(code, 'manual'));
+    }
   }
 
   @override
@@ -46,16 +58,28 @@ class _ScanScreenState extends State<ScanScreen> {
     return Scaffold(
       appBar: AppBar(title: Text(t.scanTag)),
       body: Stack(children: [
-        MobileScanner(onDetect: (capture) {
-          for (final b in capture.barcodes) {
-            final v = b.rawValue;
-            if (v != null && _tagPattern.hasMatch(v)) {
-              _finish(ScanResult(v, 'qr'));
-              return;
+        MobileScanner(
+          controller: _controller,
+          onDetect: (capture) {
+            for (final b in capture.barcodes) {
+              final v = b.rawValue;
+              if (v != null && _tagPattern.hasMatch(v)) {
+                _finish(ScanResult(v, 'qr'));
+                return;
+              }
             }
-          }
-        }),
-        Positioned(left: 16, right: 16, bottom: 24, child: OutlinedButton(style: OutlinedButton.styleFrom(backgroundColor: Colors.white), onPressed: _manual, child: Text(t.manualCode))),
+          },
+        ),
+        Positioned(
+          left: 16,
+          right: 16,
+          bottom: 24,
+          child: OutlinedButton(
+            style: OutlinedButton.styleFrom(backgroundColor: Colors.white),
+            onPressed: _manual,
+            child: Text(t.manualCode),
+          ),
+        ),
       ]),
     );
   }

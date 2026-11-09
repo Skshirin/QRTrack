@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 
 import '../core/repo.dart';
@@ -150,6 +152,59 @@ class _IssuesScreenState extends State<IssuesScreen> {
 
     final photo = await Navigator.push<PhotoDraft>(context, MaterialPageRoute(builder: (_) => const CaptureScreen(kind: 'after')));
     if (photo == null || !mounted) return;
+
+    final confirmed = await showModalBottomSheet<bool>(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      builder: (ctx) => Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.verified, color: Colors.green.shade700, size: 28),
+                const SizedBox(width: 8),
+                const Text('Confirm Fix Resolution', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Text('Asset: $assetName', style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
+            Text('Verified Tag: ${scan.code}', style: TextStyle(color: Colors.grey.shade700)),
+            const SizedBox(height: 12),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: Image.file(File(photo.path), height: 180, fit: BoxFit.cover),
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () => Navigator.pop(ctx, false),
+                    child: Text(t.back),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: FilledButton.icon(
+                    style: FilledButton.styleFrom(backgroundColor: Colors.green.shade700),
+                    icon: const Icon(Icons.check_circle),
+                    label: const Text('Confirm Fix'),
+                    onPressed: () => Navigator.pop(ctx, true),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+          ],
+        ),
+      ),
+    );
+
+    if (confirmed != true || !mounted) return;
 
     await svc.repo.submitIssueFix(issue, photo);
     await svc.sync.refreshCount();
