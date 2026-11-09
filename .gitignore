@@ -1,0 +1,41 @@
+# Environment & credentials
+.env
+*.env.local
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+celerybeat-schedule*
+.pytest_cache/
+.coverage
+htmlcov/
+.venv/
+venv/
+ENV/
+
+# Node
+node_modules/
+dist/
+.npm/
+
+# Flutter / Dart / Android build
+build/
+**/build/
+.dart_tool/
+**/.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.pub-cache/
+.pub/
+android/.gradle/
+**/android/.gradle/
+local.properties
+**/local.properties
+*.log
+hs_err_pid*.log
+
+# IDE
+.idea/
+.vscode/
+*.iml

@@ -1,0 +1,31 @@
+name: kanha_qr
+description: Kanha QR Monitoring - offline field app
+publish_to: "none"
+version: 1.0.0+1
+
+environment:
+  sdk: ">=3.4.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  intl: any
+  sqflite_sqlcipher: ^3.1.0     # encrypted local DB (SQLCipher)
+  path: ^1.9.0
+  path_provider: ^2.1.4
+  flutter_secure_storage: ^9.2.2
+  http: ^1.2.2
+  mobile_scanner: ^5.2.3
+  camera: ^0.11.0
+  flutter_image_compress: ^2.3.0
+  geolocator: ^13.0.1
+  connectivity_plus: ^6.0.5
+  workmanager: ^0.10.10
+  crypto: ^3.0.5
+  uuid: ^4.5.1
+
+flutter:
+  uses-material-design: true
+  generate: true

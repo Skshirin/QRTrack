@@ -1,0 +1,42 @@
+services:
+  db:
+    image: postgis/postgis:16-3.4
+    environment: { POSTGRES_USER: kanha, POSTGRES_PASSWORD: kanha, POSTGRES_DB: kanha }
+    ports: ["5432:5432"]
+    volumes: [pgdata:/var/lib/postgresql/data]
+    healthcheck: { test: ["CMD-SHELL", "pg_isready -U kanha"], interval: 5s, retries: 10 }
+  redis:
+    image: redis:7-alpine
+    ports: ["6379:6379"]
+  minio:
+    image: minio/minio
+    command: server /data --console-address ":9001"
+    environment: { MINIO_ROOT_USER: minioadmin, MINIO_ROOT_PASSWORD: minioadmin }
+    ports: ["9000:9000", "9001:9001"]
+    volumes: [miniodata:/data]
+  api:
+    build: ./backend
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    env_file: [.env]
+    environment: &env
+      DATABASE_URL: postgresql+psycopg2://kanha:kanha@db:5432/kanha
+      REDIS_URL: redis://redis:6379/0
+      S3_ENDPOINT: http://minio:9000
+    volumes: ["./backend:/code"]
+    ports: ["8000:8000"]
+    depends_on: { db: { condition: service_healthy }, redis: { condition: service_started }, minio: { condition: service_started } }
+  worker:
+    build: ./backend
+    command: celery -A app.tasks.celery worker -l info
+    env_file: [.env]
+    environment: *env
+    volumes: ["./backend:/code"]
+    depends_on: [api]
+  beat:
+    build: ./backend
+    command: celery -A app.tasks.celery beat -l info
+    env_file: [.env]
+    environment: *env
+    volumes: ["./backend:/code"]
+    depends_on: [api]
+volumes: { pgdata: {}, miniodata: {} }

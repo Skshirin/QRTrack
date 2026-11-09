@@ -1,0 +1,14 @@
+fastapi
+uvicorn[standard]
+sqlalchemy>=2.0
+psycopg2-binary
+geoalchemy2
+alembic
+pydantic-settings
+PyJWT
+redis
+celery[redis]
+boto3
+qrcode[pil]
+reportlab
+pytest

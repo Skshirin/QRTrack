@@ -1,0 +1,44 @@
+{
+  "@@locale": "en",
+  "appTitle": "Kanha QR Monitoring",
+  "phone": "Phone number",
+  "pinOrOtp": "PIN or one-time code",
+  "sendOtp": "Send one-time code",
+  "signIn": "Sign in",
+  "dueToday": "Due today",
+  "scanTag": "Scan tag",
+  "manualCode": "Type the code",
+  "submit": "Submit",
+  "next": "Next",
+  "back": "Back",
+  "yes": "Yes",
+  "no": "No",
+  "takePhoto": "Take photo",
+  "retake": "Retake photo",
+  "waitingUpload": "{count} waiting to upload",
+  "syncNow": "Sync now",
+  "allSynced": "All synced",
+  "newAsset": "New point",
+  "issues": "Issues",
+  "noticeTitle": "How your data is used",
+  "noticeBody": "Your location is recorded only at the moment you scan or take a photo. We never track you in the background. Photograph control points, not people.",
+  "ok": "OK",
+  "logout": "Log out",
+  "tagInactive": "This tag is no longer active. Please report it to your supervisor.",
+  "saved": "Saved. It will upload when you are online.",
+  "photoRequired": "A photo is required",
+  "assetName": "Name",
+  "chooseType": "Type",
+  "chooseZone": "Zone",
+  "save": "Save",
+  "fixIssue": "Fix: scan the same tag, then take the after-photo",
+  "wrongTag": "This is not the tag of that control point",
+  "nothingDue": "Nothing due today",
+  "@waitingUpload": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
+}
