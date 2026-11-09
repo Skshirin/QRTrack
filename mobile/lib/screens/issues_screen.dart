@@ -535,6 +535,84 @@ class _IssuesScreenState extends State<IssuesScreen> {
     );
   }
 
+  void _showIssueDetails(Map<String, dynamic> i) {
+    final asset = assets[i['asset_id']];
+    final assetName = asset?['name'] ?? 'Point ${i['asset_id']?.toString().substring(0, 6) ?? ''}';
+    final zoneName = asset != null ? (zoneNames[asset['zone_id']] ?? '') : '';
+    final typeName = asset != null && assetTypes[asset['type_id']] != null ? (assetTypes[asset['type_id']]!['name']?['en'] ?? '') : '';
+    final severity = (i['severity'] as String?) ?? 'medium';
+    final status = (i['status'] as String?) ?? 'open';
+    final openedAt = i['opened_at'] != null ? DateTime.tryParse(i['opened_at'])?.toLocal() : null;
+
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      builder: (ctx) => Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: Text(assetName, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: _statusColor(status).withAlpha(30),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(status.toUpperCase(), style: TextStyle(color: _statusColor(status), fontWeight: FontWeight.bold)),
+                ),
+              ],
+            ),
+            if (zoneName.isNotEmpty || typeName.isNotEmpty) ...[
+              const SizedBox(height: 4),
+              Text([zoneName, typeName].where((s) => s.isNotEmpty).join(' • '), style: TextStyle(color: Colors.grey.shade600)),
+            ],
+            const Divider(height: 24),
+            Text('Issue: ${_formatType(i['type'] as String? ?? 'issue')}', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+            const SizedBox(height: 6),
+            Text('Severity: ${severity.toUpperCase()}', style: TextStyle(color: _severityColor(severity), fontWeight: FontWeight.w600)),
+            if (i['note'] != null && (i['note'] as String).trim().isNotEmpty) ...[
+              const SizedBox(height: 8),
+              Text('Note: ${i['note']}', style: const TextStyle(fontSize: 15)),
+            ],
+            if (openedAt != null) ...[
+              const SizedBox(height: 8),
+              Text('Reported: ${openedAt.day}/${openedAt.month}/${openedAt.year} ${openedAt.hour.toString().padLeft(2, '0')}:${openedAt.minute.toString().padLeft(2, '0')}', style: TextStyle(color: Colors.grey.shade600, fontSize: 13)),
+            ],
+            const SizedBox(height: 20),
+            if (status == 'open' || status == 'assigned')
+              SizedBox(
+                width: double.infinity,
+                child: FilledButton.icon(
+                  style: FilledButton.styleFrom(
+                    backgroundColor: Colors.teal.shade700,
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                  ),
+                  icon: const Icon(Icons.build),
+                  label: const Text('Fix This Issue Now', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                  onPressed: () {
+                    Navigator.pop(ctx);
+                    _fix(i);
+                  },
+                ),
+              )
+            else
+              Center(
+                child: Text('This issue is marked as ${status.toUpperCase()}', style: TextStyle(color: Colors.grey.shade700, fontStyle: FontStyle.italic)),
+              ),
+            const SizedBox(height: 10),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildIssueCard(Map<String, dynamic> i, AppLocalizations t) {
     final asset = assets[i['asset_id']];
     final assetName = asset?['name'] ?? 'Point ${i['asset_id']?.toString().substring(0, 6) ?? ''}';
@@ -549,115 +627,125 @@ class _IssuesScreenState extends State<IssuesScreen> {
       elevation: 2,
       margin: const EdgeInsets.symmetric(vertical: 6),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Padding(
-        padding: const EdgeInsets.all(14),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Top Row: Asset Name and Severity Badge
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(assetName, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                      if (zoneName.isNotEmpty || typeName.isNotEmpty)
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: () {
+          if (canFix) {
+            _fix(i);
+          } else {
+            _showIssueDetails(i);
+          }
+        },
+        child: Padding(
+          padding: const EdgeInsets.all(14),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Top Row: Asset Name and Severity Badge
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(assetName, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                        if (zoneName.isNotEmpty || typeName.isNotEmpty)
+                          Text(
+                            [zoneName, typeName].where((s) => s.isNotEmpty).join(' • '),
+                            style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
+                          ),
+                      ],
+                    ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: _severityColor(severity).withAlpha(30),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: _severityColor(severity).withAlpha(100)),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.warning_amber, size: 14, color: _severityColor(severity)),
+                        const SizedBox(width: 4),
                         Text(
-                          [zoneName, typeName].where((s) => s.isNotEmpty).join(' • '),
-                          style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
+                          severity.toUpperCase(),
+                          style: TextStyle(color: _severityColor(severity), fontSize: 11, fontWeight: FontWeight.bold),
                         ),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: _severityColor(severity).withAlpha(30),
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: _severityColor(severity).withAlpha(100)),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.warning_amber, size: 14, color: _severityColor(severity)),
-                      const SizedBox(width: 4),
-                      Text(
-                        severity.toUpperCase(),
-                        style: TextStyle(color: _severityColor(severity), fontSize: 11, fontWeight: FontWeight.bold),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 10),
+                ],
+              ),
+              const SizedBox(height: 10),
 
-            // Issue Title & Notes
-            Row(
-              children: [
-                Icon(Icons.report_problem_outlined, size: 18, color: Colors.grey.shade700),
-                const SizedBox(width: 6),
-                Expanded(
+              // Issue Title & Notes
+              Row(
+                children: [
+                  Icon(Icons.report_problem_outlined, size: 18, color: Colors.grey.shade700),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: Text(
+                      _formatType(i['type'] as String? ?? 'issue'),
+                      style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+                    ),
+                  ),
+                ],
+              ),
+              if (i['note'] != null && (i['note'] as String).trim().isNotEmpty) ...[
+                const SizedBox(height: 4),
+                Padding(
+                  padding: const EdgeInsets.only(left: 24),
                   child: Text(
-                    _formatType(i['type'] as String? ?? 'issue'),
-                    style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+                    i['note'] as String,
+                    style: TextStyle(fontSize: 14, color: Colors.grey.shade800, fontStyle: FontStyle.italic),
                   ),
                 ),
               ],
-            ),
-            if (i['note'] != null && (i['note'] as String).trim().isNotEmpty) ...[
-              const SizedBox(height: 4),
-              Padding(
-                padding: const EdgeInsets.only(left: 24),
-                child: Text(
-                  i['note'] as String,
-                  style: TextStyle(fontSize: 14, color: Colors.grey.shade800, fontStyle: FontStyle.italic),
-                ),
+              const SizedBox(height: 12),
+
+              // Bottom Row: Date, Status Badge, and Fix Button
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                        decoration: BoxDecoration(
+                          color: _statusColor(status).withAlpha(30),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          status.toUpperCase(),
+                          style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: _statusColor(status)),
+                        ),
+                      ),
+                      if (openedAt != null) ...[
+                        const SizedBox(width: 8),
+                        Text(
+                          '${openedAt.day}/${openedAt.month} ${openedAt.hour.toString().padLeft(2, '0')}:${openedAt.minute.toString().padLeft(2, '0')}',
+                          style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                        ),
+                      ]
+                    ],
+                  ),
+                  if (canFix)
+                    FilledButton.icon(
+                      style: FilledButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                        backgroundColor: Colors.teal.shade700,
+                      ),
+                      icon: const Icon(Icons.build, size: 16),
+                      label: const Text('Fix Issue', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
+                      onPressed: () => _fix(i),
+                    ),
+                ],
               ),
             ],
-            const SizedBox(height: 12),
-
-            // Bottom Row: Date, Status Badge, and Fix Button
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                      decoration: BoxDecoration(
-                        color: _statusColor(status).withAlpha(30),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Text(
-                        status.toUpperCase(),
-                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: _statusColor(status)),
-                      ),
-                    ),
-                    if (openedAt != null) ...[
-                      const SizedBox(width: 8),
-                      Text(
-                        '${openedAt.day}/${openedAt.month} ${openedAt.hour.toString().padLeft(2, '0')}:${openedAt.minute.toString().padLeft(2, '0')}',
-                        style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
-                      ),
-                    ]
-                  ],
-                ),
-                if (canFix)
-                  FilledButton.icon(
-                    style: FilledButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                      backgroundColor: Colors.teal.shade700,
-                    ),
-                    icon: const Icon(Icons.build, size: 16),
-                    label: const Text('Fix Issue', style: TextStyle(fontSize: 13)),
-                    onPressed: () => _fix(i),
-                  ),
-              ],
-            ),
-          ],
+          ),
         ),
       ),
     );
